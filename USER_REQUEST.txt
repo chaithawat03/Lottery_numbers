@@ -1,0 +1,5 @@
+Please help retrieve historical lottery results from 2026 to 1990 from the link below. You can see an example of the HTML section you need to retrieve data from in the HTML example.html file.
+
+https://myhora.com/lottery/stats.aspx?mx=09&vx=10
+
+Then, you can see the scope of your requirements in the "README.md" file.
