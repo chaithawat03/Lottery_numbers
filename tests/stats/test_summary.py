@@ -18,6 +18,8 @@ def test_describe_numeric():
     assert d["mean"] == 2.0
     assert d["mode"] == 2.0
     assert d["median"] == 2.0
+    assert d["variance"] == 0.5
+    assert round(d["std"], 6) == 0.707107
 
 
 def test_correlation_matrix():

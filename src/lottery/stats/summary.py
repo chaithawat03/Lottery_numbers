@@ -15,6 +15,10 @@ def shannon_entropy(counts: pd.Series) -> float:
 
 def chi_square_uniform(counts: pd.Series, categories: int) -> tuple[float, float]:
     observed = counts.to_numpy(dtype=float)
+    if len(observed) > categories:
+        raise ValueError(
+            f"counts has {len(observed)} values but categories={categories}"
+        )
     if len(observed) < categories:
         observed = np.concatenate([observed, np.zeros(categories - len(observed))])
     expected = np.full(categories, observed.sum() / categories)
@@ -23,6 +27,11 @@ def chi_square_uniform(counts: pd.Series, categories: int) -> tuple[float, float
 
 
 def describe_numeric(series: pd.Series) -> dict[str, float]:
+    """Population descriptive statistics (mean/median/mode/variance/std).
+
+    variance and std use ddof=0 (population) because the dataset is the full
+    population of historical draws, not a sample.
+    """
     s = pd.to_numeric(series, errors="coerce").dropna()
     if s.empty:
         return {k: float("nan") for k in ("mean", "median", "mode", "variance", "std")}
