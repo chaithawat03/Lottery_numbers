@@ -1,0 +1,9 @@
+[paths]
+db_path = "dataset/lottery_results.sqlite"
+csv_path = "dataset/lottery_results.csv"
+
+[analysis]
+default_window = 100
+
+[logging]
+level = "INFO"
