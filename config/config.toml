@@ -7,3 +7,12 @@ default_window = 100
 
 [logging]
 level = "INFO"
+
+[suggest]
+top_n = 10
+recent_window = 50
+
+[suggest.weights]
+frequency = 0.5
+recency = 0.25
+trend = 0.25

@@ -22,3 +22,13 @@ def test_load_config_env_override(tmp_path, monkeypatch):
     monkeypatch.setenv("LOTTERY_DEFAULT_WINDOW", "7")
     cfg = load_config(cfg_file)
     assert cfg.default_window == 7
+
+
+def test_load_config_reads_suggest_section():
+    from lottery.config import load_config
+
+    cfg = load_config()
+    assert cfg.top_n == 10
+    assert cfg.recent_window == 50
+    assert cfg.weights["frequency"] == 0.5
+    assert set(cfg.weights) == {"frequency", "recency", "trend"}
