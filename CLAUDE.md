@@ -83,6 +83,47 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
     + "ตัวเลขน่าสนใจ" tab.
   - **Not yet implemented** — awaiting execution-mode choice (Subagent-Driven vs
     inline). Still on branch `feature/foundation`.
+- **2026-06-28 — Sub-project 1.5 build COMPLETE (Subagent-Driven Development).**
+  All 8 tasks done and reviewed on branch **`feature/foundation`** (kept as-is —
+  not merged/pushed, per user choice). HEAD `fce2ece`. **52/52 tests pass, ruff
+  clean.** Per-task SDD: fresh implementer subagent → task review → fixes → next,
+  then a whole-branch final review (opus). Ledger: `.superpowers/sdd/progress.md`
+  (Foundation ledger archived as `progress-foundation.md`). Sub-project commits
+  span `b5228de..fce2ece`:
+  - Task 1: `src/lottery/data/myhora.py` (stdlib-only fetch/parse extracted from
+    the scraper, which is now a thin CLI) — `eb42548`.
+  - Task 2: `DrawRepository.latest_date()` + `save()` (CSV+SQLite, NA→NULL
+    roundtrip; sole disk writer) — `eabea06`, fix `3a4088b` (latest_date returns
+    None when `draws` table missing).
+  - Task 3: `src/lottery/data/updater.py` (`update_dataset`, `UpdateReport`,
+    `UpdateError`; merges only draws newer than the latest stored) — `6df4d23`.
+  - Task 4: config `[suggest]` (`top_n`/`recent_window`/`weights`) + tidy
+    `config.py` — `8efaa23`.
+  - Task 5: `src/lottery/stats/suggest.py` (`score_candidates` blended
+    frequency/recency/trend + Thai/English `DISCLAIMER`) — `f594560`.
+  - Task 6: per-category suggestions (`CATEGORIES`, `suggest_category`,
+    `firstprize_digit_frequency`, `suggest_all`) — `889727b`.
+  - Task 7: `src/lottery/cli.py` (`python -m lottery.cli update|suggest`) +
+    `[project.scripts]` — `fda5e43`.
+  - Task 8: dashboard `suggestion_bar` chart + sidebar refresh button +
+    "ตัวเลขน่าสนใจ" tab (renders `DISCLAIMER`, uses full history) — `41286b4`.
+  - **Final whole-branch review (opus):** integration seams all clean (NA
+    roundtrip, stdlib-only `myhora`, disclaimer on both CLI+dashboard, consistent
+    kwargs/schema/`DrawResult` order). One **Important** cross-cutting defect
+    found + fixed — `fce2ece`: `back3`/`front3` recency/trend were computed on a
+    column-stacked (non-chronological) series, so time signals reflected pre-2015
+    `Back3_3`/`Back3_4` data; fixed with a row-major `ravel("C")` reshape
+    (chronological, per-draw-adjacent) + a discriminating regression test
+    (re-review live-verified: fails old code, passes new). Same commit fixed a
+    dangling `myhora` docstring cross-ref and added a 7-digit-FirstPrize exclusion
+    test.
+  - **Outstanding (non-blocking):**
+    - Interactive browser verification of the dashboard refresh button + new
+      suggestions tab still pending a human (only a non-interactive import smoke
+      check was run).
+    - Deferred Minor review findings to triage in a later sub-project are listed
+      in the progress ledger (e.g. de-duplicate the default weights between
+      `config.py` and `suggest.py`).
 
 ## Environment / how to run
 
