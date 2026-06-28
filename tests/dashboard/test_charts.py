@@ -26,3 +26,15 @@ def test_transition_heatmap_builds():
     matrix = pd.DataFrame([[0.5, 0.5], [1.0, 0.0]], index=[0, 1], columns=[0, 1])
     fig = transition_heatmap(matrix, "t")
     assert fig.data[0].z is not None
+
+
+def test_suggestion_bar_builds_figure():
+    import pandas as pd
+
+    from lottery.dashboard.components.charts import suggestion_bar
+
+    df = pd.DataFrame(
+        {"value": ["01", "02"], "score": [0.9, 0.4]},
+    )
+    fig = suggestion_bar(df, "scores")
+    assert fig.layout.title.text == "scores"

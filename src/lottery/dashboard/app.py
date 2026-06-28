@@ -16,10 +16,11 @@ import streamlit as st
 from lottery.config import load_config
 from lottery.data.repository import DrawRepository
 from lottery.features.engineering import add_features
-from lottery.stats import digits, frequency, pairs, sequence, summary
+from lottery.stats import digits, frequency, pairs, sequence, suggest, summary
 from lottery.dashboard.components.charts import (
     frequency_bar,
     heatmap_10x10,
+    suggestion_bar,
     transition_heatmap,
 )
 
@@ -49,6 +50,24 @@ def main() -> None:
 
     df = get_data()
 
+    cfg = load_config()
+    if st.sidebar.button("🔄 อัปเดตข้อมูลล่าสุด"):
+        from lottery.data.updater import UpdateError, update_dataset
+
+        repo = DrawRepository(cfg.db_path, cfg.csv_path)
+        try:
+            with st.spinner("กำลังดึงข้อมูลงวดล่าสุด..."):
+                report = update_dataset(repo)
+            get_data.clear()
+            if report.added:
+                st.sidebar.success(
+                    f"เพิ่ม {report.added} งวด ({report.latest_before} → {report.latest_after})"
+                )
+            else:
+                st.sidebar.info("ข้อมูลเป็นปัจจุบันแล้ว")
+        except UpdateError as exc:
+            st.sidebar.error(f"อัปเดตไม่สำเร็จ: {exc}")
+
     st.sidebar.header("ตัวกรอง")
     years = sorted(df["Year"].unique())
     year_range = st.sidebar.select_slider(
@@ -72,7 +91,7 @@ def main() -> None:
         return
 
     tabs = st.tabs(
-        ["ภาพรวม", "ความถี่", "ช่วงห่าง", "หลักตัวเลข", "คู่/สามตัว", "แนวโน้ม"]
+        ["ภาพรวม", "ความถี่", "ช่วงห่าง", "หลักตัวเลข", "คู่/สามตัว", "แนวโน้ม", "ตัวเลขน่าสนใจ"]
     )
 
     with tabs[0]:
@@ -133,6 +152,31 @@ def main() -> None:
         monthly = view.groupby("Month").size().rename("draws").reset_index()
         st.subheader("จำนวนงวดต่อเดือน")
         st.bar_chart(monthly, x="Month", y="draws")
+
+    with tabs[6]:
+        st.warning(suggest.DISCLAIMER)
+        results = suggest.suggest_all(
+            df, weights=cfg.weights, recent_window=cfg.recent_window, top_n=cfg.top_n
+        )
+        labels = {
+            "last2": "เลขท้าย 2 ตัว",
+            "back3": "เลขท้าย 3 ตัว",
+            "front3": "เลขหน้า 3 ตัว",
+            "firstprize_last3": "3 ตัวท้ายรางวัลที่ 1",
+        }
+        for cat, label in labels.items():
+            st.subheader(label)
+            cand = results[cat]
+            if cand.empty:
+                st.info("ไม่มีข้อมูลเพียงพอสำหรับประเภทนี้")
+                continue
+            st.plotly_chart(
+                suggestion_bar(cand, f"คะแนนเชิงสถิติ {label}"),
+                use_container_width=True,
+            )
+            st.dataframe(cand)
+        st.subheader("ความถี่ตัวเลขแต่ละหลัก (รางวัลที่ 1)")
+        st.dataframe(results["firstprize_digits"])
 
 
 if __name__ == "__main__":

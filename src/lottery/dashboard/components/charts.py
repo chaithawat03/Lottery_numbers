@@ -25,3 +25,7 @@ def transition_heatmap(matrix: pd.DataFrame, title: str) -> go.Figure:
         data=go.Heatmap(z=matrix.to_numpy(), x=list(matrix.columns), y=list(matrix.index)),
         layout=go.Layout(title=title),
     )
+
+
+def suggestion_bar(df: pd.DataFrame, title: str) -> go.Figure:
+    return px.bar(df, x="value", y="score", title=title)
