@@ -2,8 +2,9 @@ from pathlib import Path
 
 import pandas as pd
 
+import sqlite3
+
 from lottery.data.models import ALL_COLUMNS
-from lottery.data.models import ALL_COLUMNS as _COLS
 from lottery.data.repository import DrawRepository
 
 DB = Path("dataset/lottery_results.sqlite")
@@ -45,12 +46,18 @@ def _one_row_frame():
                 "Back3_3": pd.NA, "Back3_4": pd.NA,
             }
         ],
-        columns=_COLS,
+        columns=ALL_COLUMNS,
     )
 
 
 def test_latest_date_none_when_missing(tmp_path):
     assert DrawRepository(tmp_path / "nope.sqlite").latest_date() is None
+
+
+def test_latest_date_none_when_no_draws_table(tmp_path):
+    db = tmp_path / "empty.sqlite"
+    sqlite3.connect(db).close()
+    assert DrawRepository(db).latest_date() is None
 
 
 def test_save_then_latest_date_and_load_roundtrip(tmp_path):

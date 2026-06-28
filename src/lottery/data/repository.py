@@ -35,8 +35,11 @@ class DrawRepository:
     def latest_date(self) -> str | None:
         if not self.db_path.exists():
             return None
-        with sqlite3.connect(self.db_path) as conn:
-            row = conn.execute(f"SELECT MAX(DrawDate) FROM {TABLE_NAME}").fetchone()
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(f"SELECT MAX(DrawDate) FROM {TABLE_NAME}").fetchone()
+        except sqlite3.OperationalError:
+            return None
         return row[0] if row and row[0] is not None else None
 
     def save(self, df: pd.DataFrame) -> None:
