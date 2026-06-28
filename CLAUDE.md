@@ -61,8 +61,10 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
     gitignored) — `936069c`; `current_gap` returns a well-formed empty frame on
     empty input (+ regression test) — `c9a2535`.
   - **Outstanding (non-blocking):**
-    - Interactive browser verification of the 6 dashboard tabs still pending a
-      human (only a non-interactive import + data-load smoke check was run).
+    - Browser smoke check (2026-06-28): app loads in a headless Chromium with
+      all tabs rendering and no exceptions; the overview tab was driven directly.
+      A full per-tab click-through of the 6 Foundation tabs was not exhaustively
+      exercised — see the 1.5 entry below for the browser-verification setup.
     - Deferred Minor review findings to triage in a later sub-project are listed
       in the progress ledger.
 - **2026-06-28 — Sub-project 1.5 designed & planned (build pending).**
@@ -118,9 +120,17 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
     dangling `myhora` docstring cross-ref and added a 7-digit-FirstPrize exclusion
     test.
   - **Outstanding (non-blocking):**
-    - Interactive browser verification of the dashboard refresh button + new
-      suggestions tab still pending a human (only a non-interactive import smoke
-      check was run).
+    - Browser-verified (2026-06-28, PASS). Drove the live Streamlit app in a
+      headless Chromium and confirmed: all 7 tabs render (incl. the new
+      "ตัวเลขน่าสนใจ"); the suggestions tab shows the non-predictive DISCLAIMER
+      adjacent to a `score` bar chart + breakdown table (freq/recency/trend, all
+      4 categories + first-prize digit table, leading zeros preserved); the
+      "🔄 อัปเดตข้อมูลล่าสุด" button runs a live myhora fetch and shows the Thai
+      "ข้อมูลเป็นปัจจุบันแล้ว" result with no console errors/exceptions.
+      Setup: Playwright has no Chromium build for this host's ubuntu26.04 tag, so
+      the server ran in WSL (`localhost:8501`) driven by a Windows-side
+      Playwright/Chromium via WSL2 localhost forwarding (temp tooling, since
+      removed; venv restored to its documented package set).
     - Deferred Minor review findings to triage in a later sub-project are listed
       in the progress ledger (e.g. de-duplicate the default weights between
       `config.py` and `suggest.py`).
