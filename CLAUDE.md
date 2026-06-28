@@ -65,6 +65,24 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
       human (only a non-interactive import + data-load smoke check was run).
     - Deferred Minor review findings to triage in a later sub-project are listed
       in the progress ledger.
+- **2026-06-28 — Sub-project 1.5 designed & planned (build pending).**
+  "Live refresh + experimental suggestions" — two user requests
+  (`USER_REQUEST.txt`): (1) incrementally fetch the latest draw(s); (2) suggest
+  the most-likely numbers per prize category. Framing decided per the honesty
+  rule: suggestions are **descriptive experimental scores only** (blended
+  frequency + recency-gap + recent-trend, with breakdown), never a prediction,
+  always shown with the random-draw disclaimer.
+  - Spec: `docs/superpowers/specs/2026-06-28-live-refresh-and-suggestions-design.md`.
+  - Plan: `docs/superpowers/plans/2026-06-28-live-refresh-and-suggestions.md`
+    (8-task TDD plan, Approach A = refactor scraper parsing into
+    `src/lottery/data/myhora.py`, kept stdlib-only).
+  - Scope: `myhora.fetch_draws`; `DrawRepository.latest_date()`/`save()`;
+    `data/updater.py` (`update_dataset`, `UpdateError`); config `[suggest]`;
+    `stats/suggest.py` (last2/back3/front3/firstprize-last3 + per-digit);
+    `cli.py` (`python -m lottery.cli update|suggest`); dashboard refresh button
+    + "ตัวเลขน่าสนใจ" tab.
+  - **Not yet implemented** — awaiting execution-mode choice (Subagent-Driven vs
+    inline). Still on branch `feature/foundation`.
 
 ## Environment / how to run
 
