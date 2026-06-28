@@ -74,10 +74,18 @@ def _category_series(df: pd.DataFrame, category: str) -> pd.Series:
     if category == "last2":
         return df["Last2"]
     if category == "back3":
-        return pd.concat([df[c] for c in _BACK3_COLS], ignore_index=True)
+        # Row-major reshape: each draw's Back3 values are adjacent, draws in
+        # ascending DrawDate order so the END of the series = most recent draw.
+        # Old pd.concat column-stacking put Back3_3/Back3_4 (pre-2015-only
+        # columns) at the end, falsely boosting their recency_score / gap.
+        # .values is a 2-D numpy array; ravel("C") = C-order = row-major.
+        return pd.Series(df[_BACK3_COLS].values.ravel("C"))
     if category == "front3":
-        return pd.concat([df[c] for c in _FRONT3_COLS], ignore_index=True)
+        # Same row-major reshape so the newest draw's Front3 values end the series.
+        return pd.Series(df[_FRONT3_COLS].values.ravel("C"))
     if category == "firstprize_last3":
+        # Takes last 3 chars of ANY prize length (6- or 7-digit) — era-agnostic.
+        # Contrast: firstprize_digit_frequency is 6-digit-only (positional table).
         return df["FirstPrize"].dropna().astype("string").str[-3:]
     raise ValueError(f"Unknown category: {category}")
 

@@ -1,7 +1,13 @@
 """Stdlib-only fetch + parse for myhora.com lottery statistics.
 
 Kept dependency-free (no pandas/numpy) so the standalone scraper can import it
-under the system interpreter. See scraper/scrape_myhora.py for the page layout.
+under the system interpreter.
+
+Page layout (myhora.com/lottery/stats.aspx): each draw is a
+``<div class='rowx div-link'>`` block whose onclick attribute encodes the draw
+date (``result-DD-MM-YYYY.aspx``).  Inside, ``row-hld`` divs hold FirstPrize
+(cell 0) and Last2 (cell 3).  The final cell holds Front3 numbers wrapped in
+``<u>`` tags and Back3 numbers as bare three-digit strings.
 """
 
 from __future__ import annotations

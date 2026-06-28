@@ -80,3 +80,60 @@ def test_suggest_all_has_every_category():
     for cat in CATEGORIES:
         assert cat in out
     assert "firstprize_digits" in out
+
+
+def test_back3_recency_uses_chronological_order():
+    """Regression guard: old pd.concat column-stacking placed pre-2015-era
+    Back3_3/Back3_4 at the END of the series, falsely making them appear most
+    recent (lowest gap => highest recency_score).  Row-major reshape (.values.ravel)
+    puts the newest draw's values at the end so current_gap and tail() reflect
+    actual chronological recency.  This test FAILS on the column-stacked bug."""
+    df = pd.DataFrame(
+        [
+            # Old draw (sorted first): Back3_3/Back3_4 non-null (pre-2015 era).
+            ["2533-01-01", 2533, 1, "1234567", "11", pd.NA, pd.NA, "100", "200", "300", "400"],
+            # New draw (sorted last): Back3_3/Back3_4 null (modern era).
+            ["2569-06-16", 2569, 6, "111222", "22", "434", "758", "500", "601", pd.NA, pd.NA],
+        ],
+        columns=ALL_COLS,
+    )
+    # Pure recency weight: only distance from end of the series matters.
+    out = suggest_category(
+        df, "back3", weights={"frequency": 0, "recency": 1, "trend": 0}
+    )
+    values_in_order = out["value"].tolist()
+    # "601" (Back3_2 of the newest draw) must rank above "300" and "400"
+    # (Back3_3/Back3_4 of the OLD draw).  With the column-stacking bug "300"
+    # lands at index 4 and "400" at index 6 in the series, giving them gap 3
+    # and 1 respectively — both smaller than "601"'s gap of 4 — so the bug
+    # makes them appear falsely more recent.
+    assert values_in_order.index("601") < values_in_order.index("300"), (
+        "601 (newest draw Back3_2) must have higher recency_score than 300 (old Back3_3); "
+        "column-stacking bug present if this fails"
+    )
+    assert values_in_order.index("601") < values_in_order.index("400"), (
+        "601 (newest draw Back3_2) must have higher recency_score than 400 (old Back3_4); "
+        "column-stacking bug present if this fails"
+    )
+
+
+def test_firstprize_digit_frequency_excludes_7_digit_prizes():
+    """7-digit FirstPrize rows (pre-2015 era characteristic) must be excluded
+    from firstprize_digit_frequency, which is defined for 6-digit prizes only."""
+    df = pd.DataFrame(
+        [
+            # 7-digit prize (pre-2015 era) — must be excluded.
+            ["2533-01-01", 2533, 1, "4407799", "21", pd.NA, pd.NA, "708", "359", "171", "238"],
+            # 6-digit prize (modern era) — must be counted.
+            ["2569-06-16", 2569, 6, "287184", "48", "434", "758", "007", "721", pd.NA, pd.NA],
+        ],
+        columns=ALL_COLS,
+    )
+    out = firstprize_digit_frequency(df)
+    # Only "287184" contributes; "4407799" is excluded by the str.len() == 6 filter.
+    # Position 1 of "287184" is "2" with count=1; "4" (from the 7-digit prize) absent.
+    pos1 = out[out["position"] == 1]
+    assert set(pos1["digit"].tolist()) == {"2"}, (
+        "7-digit prizes must be excluded; unexpected digits at position 1"
+    )
+    assert pos1.iloc[0]["count"] == 1
