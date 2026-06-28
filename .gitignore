@@ -21,3 +21,6 @@ logs/
 .DS_Store
 .vscode/
 .idea/
+
+# Claude Code — machine-specific
+.claude/settings.local.json
