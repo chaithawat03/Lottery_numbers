@@ -67,6 +67,9 @@ def main() -> None:
         return
 
     series = view[target].dropna()
+    if series.empty:
+        st.info(f"ไม่มีข้อมูล {target_label} ในช่วงปีที่เลือก")
+        return
 
     tabs = st.tabs(
         ["ภาพรวม", "ความถี่", "ช่วงห่าง", "หลักตัวเลข", "คู่/สามตัว", "แนวโน้ม"]
@@ -87,8 +90,8 @@ def main() -> None:
         freq = frequency.frequency(series)
         st.plotly_chart(frequency_bar(freq, f"ความถี่ {target_label}"), use_container_width=True)
         if target == "Last2":
-            st.plotly_chart(heatmap_10x10(freq, "Heatmap 00–99"), use_container_width=True)
-        hot_series = series.tail(int(window)) if window else series
+            st.plotly_chart(heatmap_10x10(freq, "ความถี่ 00–99"), use_container_width=True)
+        hot_series = series.tail(window) if window else series
         hot, cold = frequency.hot_cold(hot_series)
         col_hot, col_cold = st.columns(2)
         col_hot.subheader("เลขมาบ่อย (Hot)")
