@@ -33,26 +33,38 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
   (Approach A, pragmatic clean structure).
 - **2026-06-27 — Implementation plan written.** 9-task bite-sized TDD plan:
   `docs/superpowers/plans/2026-06-27-lottery-foundation.md`.
-- **2026-06-27 — Foundation build in progress (Subagent-Driven Development).**
-  Working on branch **`feature/foundation`** (off `main` at `6cacc1d`; not yet
-  pushed — GitHub auth pending). Per-task SDD: fresh implementer subagent →
-  task review → fixes → next. Durable progress ledger:
-  `.superpowers/sdd/progress.md`.
-  - **Done & reviewed clean: Tasks 1–4.** Current HEAD `e840d47`.
+- **2026-06-28 — Foundation build COMPLETE (Subagent-Driven Development).**
+  All 9 tasks done and reviewed on branch **`feature/foundation`** (off `main`
+  at `6cacc1d`; **kept as-is — not merged/pushed**, GitHub auth pending). HEAD
+  `c9a2535`. **27/27 tests pass, ruff clean.** Per-task SDD: fresh implementer
+  subagent → task review → fixes → next, then a whole-branch final review.
+  Durable progress ledger: `.superpowers/sdd/progress.md`.
+  - **Tasks 1–4** (HEAD was `e840d47`):
     - Task 1: scaffolding (`pyproject.toml`, `config/config.toml`,
       `src/lottery/config.py`) — `e3c3583`.
     - Task 2: data layer (`src/lottery/data/models.py`, `repository.py`) — `ba6b744`.
     - Task 3: feature engineering (`src/lottery/features/engineering.py`) — `ba1b53f`.
     - Task 4: summary stats (`src/lottery/stats/summary.py`: entropy, chi-square,
-      describe_numeric, correlation_matrix) — `fc47bc7`, fix `e840d47`
-      (documented+tested `ddof=0` population stats; guarded chi-square input).
-  - **Not started: Tasks 5–9** (stats: frequency, pairs, digits, sequence;
-    then dashboard). Resume by dispatching the Task 5 implementer
-    (`src/lottery/stats/frequency.py`).
-  - After Task 9: final whole-branch code review, then
-    `superpowers:finishing-a-development-branch`.
-  - Deferred Minor review findings to triage at final review are listed in the
-    progress ledger.
+      describe_numeric, correlation_matrix) — `fc47bc7`, fix `e840d47`.
+  - **Tasks 5–9** (this session):
+    - Task 5: `src/lottery/stats/frequency.py` (frequency, hot/cold, current_gap) — `eccaa7f`.
+    - Task 6: `src/lottery/stats/pairs.py` (digit pair & triple frequency) — `194602e`.
+    - Task 7: `src/lottery/stats/digits.py` (position dist, odd/even, high/low,
+      mirror, ascending/descending) — `b7cf93d`.
+    - Task 8: `src/lottery/stats/sequence.py` (Markov transition, repeating-digit
+      counts) — `9e3995a`.
+    - Task 9: `src/lottery/dashboard/` (plotly chart builders + Thai Streamlit
+      app with random-draw disclaimer) — `1b0bdb8`, fix `26f4697` (empty-series
+      guard for pre-2015 all-NA columns; Thai-ized heatmap title).
+  - **Final whole-branch review (opus):** no Critical. Two Important fixes
+    applied: untracked machine-specific `.claude/settings.local.json` (now
+    gitignored) — `936069c`; `current_gap` returns a well-formed empty frame on
+    empty input (+ regression test) — `c9a2535`.
+  - **Outstanding (non-blocking):**
+    - Interactive browser verification of the 6 dashboard tabs still pending a
+      human (only a non-interactive import + data-load smoke check was run).
+    - Deferred Minor review findings to triage in a later sub-project are listed
+      in the progress ledger.
 
 ## Environment / how to run
 
@@ -62,7 +74,7 @@ be drawn. Score language only (probability/confidence/trend), never certainty.
   plotly 6.8, streamlit 1.58, pytest 9.1, ruff 0.15.
 - Run tests from the repo root with **`.venv/bin/pytest`** (pyproject sets
   `pythonpath = ["src"]`). Lint with `.venv/bin/ruff check src tests`.
-- Run the dashboard (after Task 9): `PYTHONPATH=src .venv/bin/streamlit run src/lottery/dashboard/app.py`.
+- Run the dashboard: `PYTHONPATH=src .venv/bin/streamlit run src/lottery/dashboard/app.py`.
 - Note: pandas is **3.0** (not 2.x) — watch for API differences vs. the plan's
   reference snippets.
 
