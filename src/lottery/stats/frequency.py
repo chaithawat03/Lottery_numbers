@@ -27,4 +27,4 @@ def current_gap(series: pd.Series) -> pd.DataFrame:
         if pd.notna(value):
             last_index[value] = i
     rows = [{"value": v, "gap": n - 1 - idx} for v, idx in last_index.items()]
-    return pd.DataFrame(rows).sort_values("gap", ascending=False).reset_index(drop=True)
+    return pd.DataFrame(rows, columns=["value", "gap"]).sort_values("gap", ascending=False).reset_index(drop=True)

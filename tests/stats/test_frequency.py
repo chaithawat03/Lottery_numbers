@@ -21,3 +21,9 @@ def test_current_gap():
     g = current_gap(pd.Series(["01", "02", "03", "02"]))
     assert g[g["value"] == "02"]["gap"].iloc[0] == 0
     assert g[g["value"] == "01"]["gap"].iloc[0] == 3
+
+
+def test_current_gap_empty_series():
+    g = current_gap(pd.Series([], dtype="string"))
+    assert list(g.columns) == ["value", "gap"]
+    assert len(g) == 0
