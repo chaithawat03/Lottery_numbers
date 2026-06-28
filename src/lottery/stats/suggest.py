@@ -62,3 +62,66 @@ def score_candidates(
         df.sort_values("score", ascending=False)
         .reset_index(drop=True)[_SCORE_COLUMNS]
     )
+
+
+_BACK3_COLS = ["Back3_1", "Back3_2", "Back3_3", "Back3_4"]
+_FRONT3_COLS = ["Front3_1", "Front3_2"]
+
+CATEGORIES = ["last2", "back3", "front3", "firstprize_last3"]
+
+
+def _category_series(df: pd.DataFrame, category: str) -> pd.Series:
+    if category == "last2":
+        return df["Last2"]
+    if category == "back3":
+        return pd.concat([df[c] for c in _BACK3_COLS], ignore_index=True)
+    if category == "front3":
+        return pd.concat([df[c] for c in _FRONT3_COLS], ignore_index=True)
+    if category == "firstprize_last3":
+        return df["FirstPrize"].dropna().astype("string").str[-3:]
+    raise ValueError(f"Unknown category: {category}")
+
+
+def suggest_category(
+    df: pd.DataFrame,
+    category: str,
+    *,
+    weights: dict[str, float] | None = None,
+    recent_window: int = 50,
+    top_n: int = 10,
+) -> pd.DataFrame:
+    series = _category_series(df, category)
+    scored = score_candidates(series, weights=weights, recent_window=recent_window)
+    return scored.head(top_n).reset_index(drop=True)
+
+
+def firstprize_digit_frequency(df: pd.DataFrame) -> pd.DataFrame:
+    fp = df["FirstPrize"].dropna().astype("string")
+    fp = fp[fp.str.len() == 6]
+    rows = []
+    for pos in range(6):
+        counts = fp.str[pos].value_counts()
+        for digit, count in counts.items():
+            rows.append({"position": pos + 1, "digit": digit, "count": int(count)})
+    return (
+        pd.DataFrame(rows, columns=["position", "digit", "count"])
+        .sort_values(["position", "digit"])
+        .reset_index(drop=True)
+    )
+
+
+def suggest_all(
+    df: pd.DataFrame,
+    *,
+    weights: dict[str, float] | None = None,
+    recent_window: int = 50,
+    top_n: int = 10,
+) -> dict[str, pd.DataFrame]:
+    out = {
+        cat: suggest_category(
+            df, cat, weights=weights, recent_window=recent_window, top_n=top_n
+        )
+        for cat in CATEGORIES
+    }
+    out["firstprize_digits"] = firstprize_digit_frequency(df)
+    return out
