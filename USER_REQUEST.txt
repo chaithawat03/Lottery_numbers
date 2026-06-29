@@ -1,4 +1,4 @@
-Added functions:
+Add Function & Fix
 
-- Retrieves the latest draw data.
-- Suggests the most likely winning numbers for every prize category.
+- There's a page that stores data as a .json file to hold [prize number, draw number, price] for that draw, for further analysis.
+- I find using Streamlit inconvenient. I'd like you to refactor the code to use Python Flask + HTML + JavaScript instead.
